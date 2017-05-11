@@ -2,3 +2,5 @@
 	用来生成一些文件
 2.cake migrations migrate
 	用来更新数据库
+	
+	git test
