@@ -1,0 +1,5 @@
+1.composer-stepup.exe
+	//这里要设置代理，如果之前设置有误再设置有默认的话是因为加了环境变量去给它删除掉，叫做http_proxy之类的
+	最后结果不用设置代理？
+	按照之前的步骤，但要先composer -v，然后composer self-update， composer create-project --prefer-dist cakephp/app my_app_name
+	也有可能是加了证书的原因？

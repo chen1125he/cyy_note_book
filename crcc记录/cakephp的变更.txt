@@ -1,0 +1,5 @@
+1.在2.x里面的model.php里面的
+	$this->data就是$entity(这个参数加在方法的参数里面)就指本类了
+2.在2.x Form->create('Model', 'action' => 'theAction', ..) => 3.x Form->create('Model', 'url' => ['action' => ''], ...)
+3.Paginator 2.x => counter('%count%').3.x => counter(['format' => '{{count}}'])
+	PaginatorHelper的numbers(或者其他用于显示或跳转的prev等)默认会给加上一个li标签	2.x里面是span还有个专门的tag作设置

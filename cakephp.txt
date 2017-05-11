@@ -1,0 +1,156 @@
+1.拦截器beforeFilter 需要Cake\Event\Event
+	function beforeFilter(Event $Event){
+		parent::beforeFilter($Event);
+		$postAction = ['view'];
+	}
+2.params use Cake\Network\Request
+	$this->request->params['plugin' => null, 'controller' => nulll, 'action' => null, '_ext' => null, 'pass' => null]
+	上面的request里面带了很多的参数，不记得时可以用dump($this->request)输出看看
+	query()不知道为什么查询出的值都是空
+	出自API的Request & Response Object
+	
+3.Form
+	echo $this->Form->create($product)这会根据$product是否有值，然后做出add/edit的acion
+	echo $this->Form->create($product, ['type' => 'get'])
+	echo $this->Form->create($product, ['type' => 'file'])
+	echo $this->Form->create($product, ['url' => ['action' => 'login']]);
+	echo $this->Form->create(null, ['url' => ['controller' => 'Products', 'action' => 'add'], 'type' => 'get'])
+	
+	echo $this->Form->input('name', ['type' => 'file']);
+	
+	assume product belongs to group
+	$this->Form->set('groups', $this->Products->Groups->find('list')) 	//好像没什么作用
+	$this->Form->select('name', [value => show], ['empty' => '请选择']) 如果Option里面是 [value1 => [value =>show]]就会多一个optgroup
+	$options = [
+	   'Group 1' => [
+		  'Value 1' => 'Label 1',
+		  'Value 2' => 'Label 2'
+	   ],
+	   'Group 2' => [
+		  'Value 3' => 'Label 3'
+	   ]
+	];像这样
+	取通过查询取键值的话会对$brand->id => $brand->brands_name报错用array_merge来合并就可以避免了，用[]包起则会有上面optgroup的问题
+	另外还有一种方法$brands = $brands->find('list', [
+									'keyField' => 'id',		//这里的key却是那边的值
+									'valueField' => 'brands_name'		//这里的value却是那边的显示
+								]);
+					这个方法也可以$products->find('list', [
+								'keyField' => 'id',
+								'valueField' => 'brand.brands_name'
+							])->contain(['Brands'])
+					还可以$products->find('list', [
+								'keyField' => 'id',
+								'valueField' => 'product_name'
+								'groupField' => 'brand.brands_name'
+							])->contain(['Brands'])		//这个是用作分组的
+5.Associations
+	写在ObjectsTable里面
+	$this->belongsTo = [
+		'Brands' => [
+			'className' => 'Brands',	
+			'foreignKey' => 'key_name',
+			'properName' => 'name2'			//不知道这个和上面那个哪个才是别名，应该是这个
+			//conditions: array with a list of conditions to filter the join with, 意思应该是筛选吧，取条件
+			//joinType: The type of join to be used (e.g. INNER)
+			//strategy: The loading strategy to use. 'join' and 'select' are supported.
+		]
+	]
+	$this->addAssociations([
+		'belongsTo' => [
+			'Users' => ['className' => 'App\Model\Table\UsersTable']
+		],
+		'hasMany' => ['Comments']
+	])
+	
+	has对应的是belongsTo,不能双方都是has或者belongs
+	多对多
+		$this->belongsToMany
+	
+	这里面的类针对的是table
+	
+	
+6.Model
+	timestamp
+		先添加addColumn('created/modified', 'datetime')
+		再添加ObjectsTable initialize里面
+		$this->addBehavior('Timestamp',['objects' => ['Model.beforeSave' => ['created' => 'new', 'modified' => 'always']]])
+		不要用addTimestamp加吧，这它会对字段添加验证，会很麻烦
+		
+	在更新的时候添加字段addColumn()需要->update();
+	$this->loadModel('Models')
+	在validator里面看是否为新对象的时候用$entity['newRecord'], 其他的方法里面用$entity->isNew()吧
+	在xxxTable里面，成员方法调用查询用$this，而静态方法用TableRegister::get('Model')
+	在Controller里面调用xxxTble里面的成员方法可以用$this->loadModel('xxx')，然后$this->xxx->functionName()
+	【更新时用$model = $this->Models->patchEntity($model, $this->request->data)】
+	【$this->Models->save($model)】
+7.Query
+	添加数组型的查询条件时用['condition' => 'value',]多个条件用and链接但用['or' => ['condition' => 'value']]里面的会用or连接
+	在自身的controller的时候可以用$this->find()
+	在其他的controller里面可以用TabbleRegostry::get('Objects')来获取
+	object->find()->select(['id', 'name'])->where(['id !=' => 1])->order(['created' => 'DESC'])(->toArray())
+	->extract('brands_name')可以提取
+	->contain([''])
+	将查询套上debug()可以看到查询信息，效果类似dump()
+	
+8.Validator
+	requirePresence('name', 'create/update'/true/false, 'message')
+	requirePresence(['name' => ['mode' => 'create', 'message' => 'this is message'], []);
+	not/allowEmpty('name', 'message', 'create/update'/true/false)	//not=>为true的时候不验证，换成函数时相反
+	上面的是在上述行为发生时需要有这个字段，下面的意思是这个字段不能为空，上面不为空时才会做这个验证
+	notEmpty('name', 'message', function($entity){
+		//这个entity里面有好多的信息并不是只有某一个实体，还包含了这个实体的其他信息
+		//用$entity['data']['name']可以取这个实体里面的某个值
+		//function(){} => return t/f，和直接写t/f产生的结果好像是相反的
+		//上面的那个方法可以用来设置什么时候需要进行验证什么时候不需要进行验证
+		
+	})
+	add($field, $valide_name, $rule[])
+	add($field, ['minLength' => ['rule' => ['minLength', 10], 'last' => true, 'message' => 'this is message'], []]);
+	last => true的意思是在这个验证不通过，就不去执行下一个验证了
+	
+	lengthBetween('username', [4, 8]);
+	add('rating', 'validValue', ['rule' => ['range', 1, 5]])
+	add('name', ['compareWith' => ['rule' => ['compareWith', 'theNameItComparedWith']]])
+	add('name', ['aMethod' => ['rule' => [$this, 'theMethod']]])//自定义的方法加个$this，继承的也要吧，或者单个的方法又或者不要参数的方法，这里的注释尚不严谨，待验证
+	自定义写在下面的方法可以用参数$value和$entity获取值=>function theMethod($value, $entity)？！返回true则验证通过，返回false则验证不通过
+	
+	【警告：不要用add - notBlank, 用requirePresence+notEmpty】
+	
+9.Flash
+	->error (__("message"))会读取Template/Element/Flash/error.ctp下面的样式作为message的模板
+	->success (__("success"))同上
+	
+10.Shell
+	此目录文件夹下的文件是用命令来单独运行的(可以用来创建一个初始用户)，运行命令为
+		如InitDataShell.php->cake init_data
+		
+11.Helper
+	在FormHelper里面的Input等等，如果设置了div，任何值都会为其添加上div，在crcc中就通过修改其源代码给它去掉了，大概是因为太多吧
+	Form->create('Model'/$model, ['url'=>['action' => '']]) => 好像都是要用$model啊，否则在新建的时候出现错误信息无法解决
+	Html->link('show', ['action' => 'actionName', params(像id啊)])
+	
+	$this->JS->Form->postLink('删除', ['action' => '', id], ['confirm' => '确认删除吗？'])可以用作删除链接
+12.Paginator
+	2.x => count('%count%').3.x => count(['format' => '{{count}}'])
+	$this->Paaginator->number(array('modulus' => 2,'first' => 1,'last' => 1,【'ellipsis' => '<span class="gap">…</span>'会自动回复】, 【'separator' => ' '失效】))
+									中间显示多少页	前面显示多少页 最后显示多少页	
+		默认会给加上一个li标签	2.x里面是span还有个专门的tag作设置
+		'disableTitle'单独使用没有属性值，不过好像没实际的卵用，只是给前面的标签加上一个disable的class属性
+		【对于上面的分页链接，可以用参数templates设置其样式，详见PaginatorHelper】
+		在Cotroller里面可以设置
+			public $paginate = [
+				'limit' => 25,
+				'contain' => ['xxxas', 'xxxbs'],
+				'fields' => ['xxxas.zz', 'xxxbs.xx']
+				'conditions' => ['' => '']
+				'group' => ''
+				'order' => ['' => 'asc/desc']
+			]
+			//这个属性是有用的
+		【有个ajax pagination】
+13.假删除
+	在behavior里面添加文件
+	对要用到假删除的加addBehavior('SoftDeletable')
+14.Template
+	$this->Element('fileNameInElementDirectory')

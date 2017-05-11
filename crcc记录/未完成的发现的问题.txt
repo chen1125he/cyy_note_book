@@ -1,0 +1,2 @@
+1.User验证中的tokenhash问题
+2.在delete那抛出异常的作用是什么

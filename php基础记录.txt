@@ -1,0 +1,107 @@
+1.全局和局部变量
+	在局部中可以用到全局变量，但最终不会对它做出改变
+	可以用global $variable; 表示这用的是全局变量，也会对同名的全局变量做出改变
+	另外也可以用$GLOBLE['variable']来调用全局变量
+	static 用在函数中的
+2.echo用于向网页中输出，可以带html标签，类似于ruby中的p,可以连续隔逗号地输出
+	输出时大括号的作用有点迷，加了也不会显示，也像是ruby中的#{}，但事实上不加也没有问题？
+3.变量
+	串也像ruby里面一样都可以用单双引号包住
+	整数可以有十进，0x的16进和0的8进
+	var_dump()可以返回数据的类型, 输出的内容可能包括类型，长度，值, 但这个方法本身返回的是null
+	也可以有对象
+		class Object{
+			var $variable;
+			function Object($variable = "value"){
+				$this->variable = $variable;  //这里和java好相似
+			}
+			function get_varuable(){
+				return $this->variable;   //$this->变量不用带$?
+			}
+		}
+	空值是NULL(无大小写区分的吧，输出的时候输出的是大写)
+	数组$arr = array(value0, value1, value2)
+	bool $y = true, $n = false;
+	
+	常量是define(string $name, mixed $value [, bool $case_insensitive = false]) 大小写敏感是针对$name的,另外是全局的，但也仅限在定义它之后才能使用
+	
+	字符串的操作： . 是对串的拼接, 可以拼接其他类型的，但true拼接之后竟然是1？！
+	strlen()返回string的长度， strpos()返回string(str_mom, str_child)子串的开始位置
+4.运算符
+	/ 除法不是整除，整数相除也会得出小数, 整除是intdiv(被除数, 除数)
+	有 ++ --
+	&&/and, ||/or, xor(异或, 有且仅有一个为真
+	也有/=, +=, -=, *=
+	也有三元运算符，还有个null合并运算符 ？？ yes ?? value, 当yes不存在则返回value否则返回yes, 类似ruby ||=
+	组合比较 <=>
+5.if
+	同java类似
+6.switch 也同java类似里面的值有多种可以是strings可以是
+7.数组
+	count()可以获取数组的长度
+	$arr = array(value1, value2...)
+	$arr2 = array('key1'=>value1, 'key2'=>value2...) 这叫关联数组，类似hash
+	foreach($arr2 as $x=>$x_value)
+	sort()顺序排序， rsort()逆序排序
+	asort()/arsort()关联数组的值作排序, ksort()/krsort()关联数组的键作排序
+8.php超级全局变量
+	$GLOBLES, 全局变量的数组
+	$_SERVER   ['PHP_SELF']当前文件名 /index.html
+			   ['SERVER_NAME']服务器地址 localhost
+			   ['HTTP_HOST']服务器地址+端口 localhost:8081
+			   里面有很多服务器内的信息吧
+	$_REQUEST  获取提交的表单内的值吧
+	$_POST	   获取POST方式提交的表单
+	$_GET	   获取GET方式提交的表单
+	$_FILES[NAME]['size/tmp_name/type/name/error'] error只会显示0不知道是什么鬼
+9.循环
+	while和do...while与java类似
+	for循环也类似
+	foreach($array as $value){
+	
+	}//或称其为遍历更合理？
+10.函数
+	返回值类似js，用return
+11.魔术变量
+	__LINE__	文件中当前行号
+	__FILE__	完整的文件名和路径
+	__DIR__		文件所在目录， 相当于dirname(__FILE__)
+	__FUNCTION__/__METHOD__		方法名，有说法是method也会有类的名字
+	__CALSS__	类的名称
+	__TRAIT__	trait的名字
+	__NAMESPACE__	当前命名空间
+12.命名空间
+
+13.类
+	class PhpClass extends Parent{
+		const constant = '常量值';
+		var $var1;
+		var $var2 = "this is a string";
+		function myfun($arg1, $arg2){
+			
+		}
+		function getVar1(){
+			return $this->var1;
+		}
+		function setVar1($var1){
+			$this->var1 = $var1;
+		}
+		function __construct($arg1, $arg2, ...){
+			$this->var1 = $arg1;
+			$this->var2 = $arg2;
+		}
+		function __destruct(){
+			
+		}
+	}
+	
+	$obj = new PhpClass;
+	调用成员变量的时候一定要用$this->var;
+	同样有private(私有的类成员则只能被其定义所在的类访问。) public(公有的类成员可以在任何地方被访问。) protected(受保护的类成员则可以被其自身以及其子类和父类访问。)
+	方法和成员变量都能用，但变量用的时候不能加var了
+	常量const constant = '常量值';	PhpClass/self::constant
+	
+14.正则表达式
+	Bool preg_match($pattern = '/this is pattern/', $string, [Array matched_str])//matched_str里面的值根据$pattern的分组来分的
+15.Date
+	checkdate(int $month, int $date, int $year)->t/f
