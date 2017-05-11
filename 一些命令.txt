@@ -3,4 +3,4 @@
 2.cake migrations migrate
 	用来更新数据库
 	
-	中文乱码
+	中文乱码中文乱码中文乱码
